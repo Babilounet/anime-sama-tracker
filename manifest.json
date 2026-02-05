@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Anime-Sama Watch Tracker",
+  "version": "1.0.0",
+  "description": "Suivez vos épisodes regardés sur anime-sama, indépendamment des changements de domaine.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["https://api.github.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
