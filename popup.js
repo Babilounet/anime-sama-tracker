@@ -205,6 +205,12 @@ syncToggle.addEventListener("click", () => {
   syncConfig.style.display = syncConfig.style.display === "none" ? "block" : "none";
 });
 
+// Lien vers création de token
+document.getElementById("token-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  chrome.tabs.create({ url: e.target.href });
+});
+
 // Charge la config sync au démarrage
 async function loadSyncConfig() {
   const { _gh_token, _gist_id } = await chrome.storage.local.get(["_gh_token", "_gist_id"]);

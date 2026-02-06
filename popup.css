@@ -171,6 +171,22 @@ a.anime-name:hover {
   border-top: 1px solid #0f3460;
 }
 
+.sync-info {
+  font-size: 11px;
+  color: #a0a0a0;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.sync-info a {
+  color: #4caf50;
+  text-decoration: none;
+}
+
+.sync-info a:hover {
+  text-decoration: underline;
+}
+
 #gh-token {
   width: 100%;
   padding: 6px 8px;

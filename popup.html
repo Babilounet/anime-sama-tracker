@@ -22,7 +22,11 @@
         <span id="sync-status"></span>
       </div>
       <div id="sync-config" style="display: none;">
-        <input type="password" id="gh-token" placeholder="GitHub token (scope: gist)">
+        <p class="sync-info">
+          Pour synchroniser entre navigateurs, crée un token GitHub avec le scope <strong>gist</strong> :
+          <a href="https://github.com/settings/tokens/new?scopes=gist&description=Anime-Sama%20Tracker" id="token-link">Créer un token</a>
+        </p>
+        <input type="password" id="gh-token" placeholder="Colle ton token ici">
         <div class="sync-actions">
           <button id="btn-sync">Synchroniser</button>
           <button id="btn-sync-disconnect" class="btn-small-danger" style="display: none;">Deconnecter</button>
