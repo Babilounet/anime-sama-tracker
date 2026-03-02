@@ -6,7 +6,7 @@
   // Parse l'URL pour extraire slug, saison, langue
   function parseURL() {
     const path = window.location.pathname;
-    const match = path.match(/\/catalogue\/([^/]+)\/(saison\d+)\/([^/]+)/);
+    const match = path.match(/\/catalogue\/([^/]+)\/([^/]+)\/([^/]+)/);
     if (!match) return null;
     return {
       slug: match[1],
@@ -94,14 +94,14 @@
     // Attendre que les liens de saisons soient chargés
     function addBadges() {
       const links = [...document.querySelectorAll('a')].filter(
-        (a) => /\/catalogue\/[^/]+\/saison\d+/i.test(a.href) && !a.dataset.astBadged
+        (a) => /\/catalogue\/[^/]+\/[^/]+\/[^/]+/i.test(a.href) && !a.dataset.astBadged
       );
       if (links.length === 0) return false;
 
       links.forEach((link) => {
         link.dataset.astBadged = "true";
         // Extraire saison + langue du href
-        const m = link.href.match(/\/(saison\d+)\/([^/]+)\/?$/);
+        const m = link.href.match(/\/([^/]+)\/([^/]+)\/?$/);
         if (!m) return;
 
         const seasonKey = `${m[1]}/${m[2]}`;
