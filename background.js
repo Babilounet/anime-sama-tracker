@@ -1,7 +1,7 @@
 // Service worker - gère l'installation et le push vers GitHub
 
 const GIST_FILENAME = "anime-sama-tracker.json";
-const INTERNAL_KEYS = ["_domain", "_gh_token", "_gist_id"];
+const INTERNAL_KEYS = ["_domain", "_domain_history", "_gh_token", "_gist_id"];
 
 // Debounce pour éviter trop de push rapprochés
 let pushTimeout = null;
@@ -55,6 +55,8 @@ async function getTrackerData() {
   const data = {};
   for (const [key, value] of Object.entries(allData)) {
     if (key === "_domain" && value) {
+      data[key] = value;
+    } else if (key === "_domain_history" && value) {
       data[key] = value;
     } else if (!INTERNAL_KEYS.includes(key) && value && value.seasons) {
       data[key] = value;

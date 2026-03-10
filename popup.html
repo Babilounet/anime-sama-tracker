@@ -8,6 +8,20 @@
   <div class="container">
     <h1>Anime-Sama Tracker</h1>
 
+    <div class="domain-section">
+      <div class="domain-header" id="domain-toggle">
+        <span>Domaine</span>
+        <span id="domain-current" class="domain-current"></span>
+      </div>
+      <div id="domain-config" style="display: none;">
+        <div id="domain-history-list" class="domain-history"></div>
+        <div class="domain-manual">
+          <input type="text" id="domain-input" placeholder="ex: anime-sama.new">
+          <button id="btn-domain-set">Appliquer</button>
+        </div>
+      </div>
+    </div>
+
     <div id="anime-list"></div>
 
     <div id="empty-state" class="empty-state" style="display: none;">

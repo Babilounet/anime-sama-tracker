@@ -131,8 +131,22 @@
     }
   }
 
-  // Stocker le domaine actuel pour les liens dans le popup
-  await chrome.storage.local.set({ _domain: window.location.origin });
+  // Stocker le domaine actuel pour les liens dans le popup (avec historique)
+  const { _domain: storedDomain, _domain_history: history } =
+    await chrome.storage.local.get(["_domain", "_domain_history"]);
+  const currentOrigin = window.location.origin;
+
+  if (storedDomain !== currentOrigin) {
+    const domainHistory = history || [];
+    // Ne pas ajouter de doublon
+    if (!domainHistory.some(e => e.domain === currentOrigin)) {
+      domainHistory.push({ domain: currentOrigin, date: new Date().toISOString().split("T")[0] });
+    }
+    await chrome.storage.local.set({
+      _domain: currentOrigin,
+      _domain_history: domainHistory
+    });
+  }
 
   // Page catalogue (/catalogue/{slug}/) → afficher badges sur les saisons
   const catalogueMatch = window.location.pathname.match(/\/catalogue\/([^/]+)\/?$/);

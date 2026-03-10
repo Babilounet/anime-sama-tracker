@@ -1,6 +1,8 @@
 const animeListEl = document.getElementById("anime-list");
 const emptyStateEl = document.getElementById("empty-state");
 
+const INTERNAL_KEYS = ["_domain", "_domain_history", "_gh_token", "_gist_id"];
+
 let currentDomain = null;
 
 // Charge et affiche tous les animes suivis
@@ -20,7 +22,7 @@ async function loadAnimeList() {
   }
 
   const slugs = Object.keys(allData).filter(
-    (key) => key !== "_domain" && hasVisibleSeasons(allData[key])
+    (key) => !INTERNAL_KEYS.includes(key) && hasVisibleSeasons(allData[key])
   );
 
   if (slugs.length === 0) {
@@ -182,6 +184,106 @@ function createAnimeCard(slug, anime) {
   return card;
 }
 
+// ===================== Domain Section =====================
+
+const domainToggle = document.getElementById("domain-toggle");
+const domainConfig = document.getElementById("domain-config");
+const domainCurrentEl = document.getElementById("domain-current");
+const domainHistoryList = document.getElementById("domain-history-list");
+const domainInput = document.getElementById("domain-input");
+const btnDomainSet = document.getElementById("btn-domain-set");
+
+// Toggle la section domaine
+domainToggle.addEventListener("click", () => {
+  domainConfig.style.display = domainConfig.style.display === "none" ? "block" : "none";
+});
+
+async function loadDomainSection() {
+  const { _domain: domain, _domain_history: history } =
+    await chrome.storage.local.get(["_domain", "_domain_history"]);
+
+  // Afficher le domaine actuel dans le header
+  if (domain) {
+    try {
+      domainCurrentEl.textContent = new URL(domain).hostname;
+    } catch {
+      domainCurrentEl.textContent = domain;
+    }
+  } else {
+    domainCurrentEl.textContent = "non défini";
+  }
+
+  // Peupler la liste historique
+  domainHistoryList.innerHTML = "";
+  const entries = history || [];
+  if (entries.length === 0) {
+    domainHistoryList.innerHTML = '<div class="domain-history-empty">Aucun historique</div>';
+    return;
+  }
+
+  entries.slice().reverse().forEach((entry) => {
+    const item = document.createElement("div");
+    item.className = "domain-history-item";
+    if (entry.domain === domain) item.classList.add("domain-active");
+
+    const label = document.createElement("span");
+    try {
+      label.textContent = new URL(entry.domain).hostname;
+    } catch {
+      label.textContent = entry.domain;
+    }
+
+    const date = document.createElement("span");
+    date.className = "domain-history-date";
+    date.textContent = entry.date;
+
+    item.appendChild(label);
+    item.appendChild(date);
+
+    if (entry.domain !== domain) {
+      item.style.cursor = "pointer";
+      item.title = "Utiliser ce domaine";
+      item.addEventListener("click", async () => {
+        await chrome.storage.local.set({ _domain: entry.domain });
+        await loadDomainSection();
+        await loadAnimeList();
+      });
+    }
+
+    domainHistoryList.appendChild(item);
+  });
+}
+
+// Bouton Appliquer : domaine manuel
+btnDomainSet.addEventListener("click", async () => {
+  let value = domainInput.value.trim();
+  if (!value) return;
+
+  // Normaliser en URL
+  if (!value.startsWith("http")) {
+    value = "https://" + value;
+  }
+  // Retirer le trailing slash
+  value = value.replace(/\/+$/, "");
+
+  const { _domain_history: history } = await chrome.storage.local.get("_domain_history");
+  const domainHistory = history || [];
+
+  if (!domainHistory.some(e => e.domain === value)) {
+    domainHistory.push({ domain: value, date: new Date().toISOString().split("T")[0] });
+  }
+
+  await chrome.storage.local.set({
+    _domain: value,
+    _domain_history: domainHistory
+  });
+
+  domainInput.value = "";
+  chrome.runtime.sendMessage({ action: "triggerPush" });
+  await loadDomainSection();
+  await loadAnimeList();
+});
+
 // ===================== GitHub Gist Sync =====================
 
 const syncToggle = document.getElementById("sync-toggle");
@@ -193,7 +295,6 @@ const syncStatus = document.getElementById("sync-status");
 const syncMsg = document.getElementById("sync-msg");
 
 const GIST_FILENAME = "anime-sama-tracker.json";
-const INTERNAL_KEYS = ["_domain", "_gh_token", "_gist_id"];
 
 function showSyncMsg(text, type) {
   syncMsg.textContent = text;
@@ -322,6 +423,9 @@ btnSync.addEventListener("click", async () => {
         if (key === "_domain" && value) {
           data[key] = value;
         }
+        if (key === "_domain_history" && value) {
+          data[key] = value;
+        }
       }
       const gist = await createGist(token, data);
       await chrome.storage.local.set({ _gist_id: gist.id });
@@ -332,6 +436,7 @@ btnSync.addEventListener("click", async () => {
     syncStatus.style.color = "#4caf50";
     btnDisconnect.style.display = "block";
     loadAnimeList();
+    loadDomainSection();
   } catch (err) {
     showSyncMsg(`Erreur: ${err.message}`, "error");
   }
@@ -375,6 +480,7 @@ async function autoPullOnOpen() {
         await chrome.storage.local.set({ [key]: value });
       }
       loadAnimeList();
+      loadDomainSection();
     }
   } catch (err) {
     console.error("Auto-pull erreur:", err.message);
@@ -383,5 +489,6 @@ async function autoPullOnOpen() {
 
 // Chargement initial
 loadAnimeList();
+loadDomainSection();
 loadSyncConfig();
 autoPullOnOpen();
